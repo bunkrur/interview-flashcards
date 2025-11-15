@@ -1,13 +1,13 @@
-# Flashcards - Tech Knowledge Learning Platform
+# Flashcards - Tech Knowledge Learning Cards App
 
-A full-stack flashcard application for coding and tech knowledge with spaced repetition algorithm (SM-2). Contains **250 comprehensive flashcards** across 10 technical categories.
+A full-stack flashcard application for coding and tech knowledge with spaced repetition algorithm (SM-2).
 
 ## Features
 
 - **Spaced Repetition Learning**: SM-2 algorithm for optimal review scheduling
 - **AI-Powered Explanations**: Get additional context and deeper explanations using Claude Sonnet 4.5
-- **250 Flashcards**: 25 cards per category covering beginner to advanced topics
-- **10 Categories**: Linux, Git, Kubernetes, ArgoCD, Docker, Computer Science, SRE, Networking, SQL, System Design
+- **250+ Flashcards**: 25 cards per category covering beginner to advanced topics
+- **10+ Categories**: Linux, Git, Kubernetes, ArgoCD, Docker, Computer Science, SRE, Networking, SQL, System Design
 - **Progress Tracking**: Track your learning progress, streaks, and mastery levels
 - **Progress Reset**: Clear your learning progress while keeping all flashcards
 - **Export to SQL**: Download all flashcards and categories as a SQL file for backup or sharing
@@ -180,59 +180,9 @@ The app uses the SM-2 (SuperMemo 2) algorithm:
 
 ## Flashcard Database
 
-The application includes **250 carefully curated flashcards** (25 per category) covering essential technical knowledge:
+The application includes **250+ carefully curated flashcards** covering essential technical knowledge
 
-### Categories & Topics
 
-**Linux Commands** (25 cards)
-- File operations, permissions, process management
-- Disk usage, compression, text processing
-- Network utilities, system monitoring
-
-**Git** (25 cards)
-- Branching, merging, rebasing strategies
-- Advanced commands (stash, cherry-pick, reflog)
-- History management and collaboration workflows
-
-**Kubernetes** (26 cards)
-- Core concepts (Pods, Services, Deployments)
-- kubectl commands and resource management
-- StatefulSets, DaemonSets, Ingress, ConfigMaps
-
-**ArgoCD** (25 cards)
-- GitOps principles and workflows
-- Application management and sync strategies
-- ApplicationSets, sync waves, and hooks
-
-**Docker** (25 cards)
-- Container lifecycle and image management
-- Dockerfile best practices and multi-stage builds
-- Networking, volumes, and resource limits
-
-**Computer Science** (25 cards)
-- Data structures (arrays, trees, graphs, heaps)
-- Algorithms (sorting, searching, dynamic programming)
-- Big O notation, time/space complexity
-
-**SRE & Observability** (25 cards)
-- Golden signals, SLIs/SLOs/SLAs, error budgets
-- Monitoring strategies (RED, USE methods)
-- Distributed tracing, log aggregation
-
-**Networking** (24 cards)
-- OSI model, TCP/IP, DNS, DHCP
-- Network security (firewalls, VLANs, NAT)
-- Protocols and troubleshooting
-
-**SQL** (25 cards)
-- Query optimization and joins
-- Indexes, transactions, ACID properties
-- Database design and normalization
-
-**System Design** (25 cards)
-- Scalability patterns (horizontal/vertical)
-- Caching, load balancing, database strategies
-- Microservices, message queues, CDNs
 
 ### Difficulty Levels
 - **Easy**: Fundamental concepts and basic commands
@@ -312,3 +262,4 @@ The Progress page includes a "Reset Progress" button that allows you to start fr
 ## License
 
 MIT
+
