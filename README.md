@@ -65,7 +65,7 @@ The fastest way to get started:
 # 1. Install dependencies
 npm run install-all
 
-# 2. Initialize and seed database (250 flashcards)
+# 2. Initialize and seed database (add flashcards)
 cd backend
 npm run init-db
 npm run seed-db
@@ -229,7 +229,7 @@ INSERT INTO flashcards (category_id, question, answer, difficulty, explanation) 
     (1, 'Another question?', 'Another answer', 'easy', 'More explanation.');
 ```
 
-**Note**: The 250 included flashcards are all in `seed.sql` for easy version control and sharing.
+**Note**: The included flashcards are all in `seed.sql` for easy version control and sharing.
 
 ## Features in Detail
 
@@ -247,7 +247,7 @@ The Progress page includes a "Reset Progress" button that allows you to start fr
 - Resets card intervals and ease factors
 - Deletes study session history
 - Makes all cards available for review again
-- **Keeps all 250 flashcards intact**
+- **Keeps all flashcards intact**
 
 ### Keyboard Shortcuts
 - **Space**: Flip flashcard to reveal answer
@@ -262,5 +262,6 @@ The Progress page includes a "Reset Progress" button that allows you to start fr
 ## License
 
 MIT
+
 
 
