@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react';
 import { useParams, useNavigate, useSearchParams } from 'react-router-dom';
-import { flashcardsAPI, categoriesAPI } from '../services/api';
+import { flashcardsAPI, categoriesAPI, aiAPI } from '../services/api';
 import LoadingSpinner from '../components/LoadingSpinner';
 
 function FlashcardForm() {
@@ -12,6 +12,9 @@ function FlashcardForm() {
   const [categories, setCategories] = useState([]);
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
+  const [enhancing, setEnhancing] = useState(false);
+  const [showEnhancementPreview, setShowEnhancementPreview] = useState(false);
+  const [enhancement, setEnhancement] = useState(null);
   const [formData, setFormData] = useState({
     category_id: searchParams.get('category') || '',
     question: '',
@@ -54,6 +57,47 @@ function FlashcardForm() {
     setFormData({ ...formData, [name]: value });
   };
 
+  const handleEnhance = async () => {
+    if (!formData.question || !formData.answer) {
+      alert('Please fill in the question and answer before enhancing');
+      return;
+    }
+
+    setEnhancing(true);
+
+    try {
+      const response = await aiAPI.enhanceFlashcard({
+        question: formData.question,
+        answer: formData.answer,
+        explanation: formData.explanation,
+        code_snippet: formData.code_snippet,
+        difficulty: formData.difficulty,
+      });
+
+      setEnhancement(response.data.enhancement);
+      setShowEnhancementPreview(true);
+    } catch (error) {
+      console.error('Error enhancing flashcard:', error);
+      alert(error.response?.data?.message || 'Failed to enhance flashcard. Please try again.');
+    } finally {
+      setEnhancing(false);
+    }
+  };
+
+  const handleApplyEnhancement = () => {
+    if (enhancement) {
+      setFormData({
+        ...formData,
+        answer: enhancement.answer,
+        explanation: enhancement.explanation || formData.explanation,
+        code_snippet: enhancement.code_snippet || formData.code_snippet,
+        difficulty: enhancement.difficulty || formData.difficulty,
+      });
+      setShowEnhancementPreview(false);
+      setEnhancement(null);
+    }
+  };
+
   const handleSubmit = async (e) => {
     e.preventDefault();
 
@@ -91,15 +135,40 @@ function FlashcardForm() {
 
   return (
     <div className="max-w-3xl mx-auto">
-      <div className="mb-6">
-        <h1 className="text-3xl font-bold text-gray-900 mb-2">
-          {isEditing ? 'Edit Flashcard' : 'Create New Flashcard'}
-        </h1>
-        <p className="text-gray-600">
-          {isEditing
-            ? 'Update the flashcard details below'
-            : 'Fill in the details to create a new flashcard'}
-        </p>
+      <div className="mb-6 flex items-start justify-between">
+        <div>
+          <h1 className="text-3xl font-bold text-gray-900 mb-2">
+            {isEditing ? 'Edit Flashcard' : 'Create New Flashcard'}
+          </h1>
+          <p className="text-gray-600">
+            {isEditing
+              ? 'Update the flashcard details below'
+              : 'Fill in the details to create a new flashcard'}
+          </p>
+        </div>
+        <button
+          type="button"
+          onClick={handleEnhance}
+          disabled={enhancing || !formData.question || !formData.answer}
+          className="btn btn-secondary flex items-center gap-2"
+        >
+          {enhancing ? (
+            <>
+              <svg className="animate-spin h-5 w-5" fill="none" viewBox="0 0 24 24">
+                <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+              </svg>
+              Enhancing...
+            </>
+          ) : (
+            <>
+              <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 10V3L4 14h7v7l9-11h-7z" />
+              </svg>
+              Enhance with AI
+            </>
+          )}
+        </button>
       </div>
 
       <form onSubmit={handleSubmit} className="card space-y-6">
@@ -223,6 +292,147 @@ function FlashcardForm() {
           </button>
         </div>
       </form>
+
+      {/* Enhancement Preview Modal */}
+      {showEnhancementPreview && enhancement && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
+          <div className="bg-white rounded-lg max-w-4xl w-full max-h-[90vh] overflow-y-auto">
+            <div className="sticky top-0 bg-white border-b border-gray-200 p-6">
+              <div className="flex items-center justify-between mb-4">
+                <h2 className="text-2xl font-bold text-gray-900">AI Enhanced Flashcard</h2>
+                <button
+                  onClick={() => setShowEnhancementPreview(false)}
+                  className="text-gray-400 hover:text-gray-600"
+                >
+                  <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                  </svg>
+                </button>
+              </div>
+              {enhancement.enhancements && (
+                <div className="p-3 bg-blue-50 border border-blue-200 rounded-lg">
+                  <p className="text-sm text-blue-800">
+                    <strong>✨ Improvements:</strong> {enhancement.enhancements}
+                  </p>
+                </div>
+              )}
+            </div>
+
+            <div className="p-6 space-y-6">
+              {/* Original vs Enhanced Comparison */}
+              <div>
+                <h3 className="text-lg font-semibold mb-3 text-gray-900">Answer</h3>
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <div>
+                    <div className="text-sm font-medium text-gray-500 mb-2">Current</div>
+                    <div className="p-4 bg-gray-50 border border-gray-200 rounded-lg min-h-[100px]">
+                      <p className="text-gray-700 whitespace-pre-wrap">{formData.answer}</p>
+                    </div>
+                  </div>
+                  <div>
+                    <div className="text-sm font-medium text-green-600 mb-2">✨ Enhanced</div>
+                    <div className="p-4 bg-green-50 border border-green-200 rounded-lg min-h-[100px]">
+                      <p className="text-gray-700 whitespace-pre-wrap">{enhancement.answer}</p>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              {/* Explanation */}
+              {(formData.explanation || enhancement.explanation) && (
+                <div>
+                  <h3 className="text-lg font-semibold mb-3 text-gray-900">Explanation</h3>
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div>
+                      <div className="text-sm font-medium text-gray-500 mb-2">Current</div>
+                      <div className="p-4 bg-gray-50 border border-gray-200 rounded-lg min-h-[100px]">
+                        <p className="text-gray-700 whitespace-pre-wrap">{formData.explanation || 'None'}</p>
+                      </div>
+                    </div>
+                    <div>
+                      <div className="text-sm font-medium text-green-600 mb-2">✨ Enhanced</div>
+                      <div className="p-4 bg-green-50 border border-green-200 rounded-lg min-h-[100px]">
+                        <p className="text-gray-700 whitespace-pre-wrap">{enhancement.explanation || 'None'}</p>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              )}
+
+              {/* Code Snippet */}
+              {(formData.code_snippet || enhancement.code_snippet) && (
+                <div>
+                  <h3 className="text-lg font-semibold mb-3 text-gray-900">Code Snippet</h3>
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div>
+                      <div className="text-sm font-medium text-gray-500 mb-2">Current</div>
+                      <pre className="p-4 bg-gray-800 text-white rounded-lg overflow-x-auto text-sm min-h-[100px]">
+                        <code>{formData.code_snippet || 'None'}</code>
+                      </pre>
+                    </div>
+                    <div>
+                      <div className="text-sm font-medium text-green-600 mb-2">✨ Enhanced</div>
+                      <pre className="p-4 bg-gray-800 text-white rounded-lg overflow-x-auto text-sm min-h-[100px]">
+                        <code>{enhancement.code_snippet || 'None'}</code>
+                      </pre>
+                    </div>
+                  </div>
+                </div>
+              )}
+
+              {/* Difficulty */}
+              <div>
+                <h3 className="text-lg font-semibold mb-3 text-gray-900">Difficulty</h3>
+                <div className="flex gap-4 items-center">
+                  <div>
+                    <div className="text-sm font-medium text-gray-500 mb-2">Current</div>
+                    <span className={`px-3 py-1 rounded text-sm font-medium ${
+                      formData.difficulty === 'easy'
+                        ? 'bg-green-100 text-green-800'
+                        : formData.difficulty === 'medium'
+                        ? 'bg-yellow-100 text-yellow-800'
+                        : 'bg-red-100 text-red-800'
+                    }`}>
+                      {formData.difficulty}
+                    </span>
+                  </div>
+                  <svg className="w-6 h-6 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 7l5 5m0 0l-5 5m5-5H6" />
+                  </svg>
+                  <div>
+                    <div className="text-sm font-medium text-green-600 mb-2">✨ Enhanced</div>
+                    <span className={`px-3 py-1 rounded text-sm font-medium ${
+                      enhancement.difficulty === 'easy'
+                        ? 'bg-green-100 text-green-800'
+                        : enhancement.difficulty === 'medium'
+                        ? 'bg-yellow-100 text-yellow-800'
+                        : 'bg-red-100 text-red-800'
+                    }`}>
+                      {enhancement.difficulty}
+                    </span>
+                  </div>
+                </div>
+              </div>
+
+              {/* Action Buttons */}
+              <div className="flex justify-end gap-3 pt-4 border-t">
+                <button
+                  onClick={() => setShowEnhancementPreview(false)}
+                  className="btn btn-secondary"
+                >
+                  Cancel
+                </button>
+                <button
+                  onClick={handleApplyEnhancement}
+                  className="btn btn-primary"
+                >
+                  Apply Enhancements
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

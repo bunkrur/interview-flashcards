@@ -51,6 +51,35 @@ export const createFlashcard = (req, res) => {
   }
 };
 
+export const createBulkFlashcards = (req, res) => {
+  try {
+    const { flashcards, category_id } = req.body;
+
+    if (!Array.isArray(flashcards) || flashcards.length === 0) {
+      return res.status(400).json({ error: 'Flashcards array is required' });
+    }
+
+    if (!category_id) {
+      return res.status(400).json({ error: 'Category ID is required' });
+    }
+
+    const createdFlashcards = flashcards.map(card => {
+      return Flashcard.create({
+        ...card,
+        category_id
+      });
+    });
+
+    res.status(201).json({
+      count: createdFlashcards.length,
+      flashcards: createdFlashcards
+    });
+  } catch (error) {
+    console.error('Error creating bulk flashcards:', error);
+    res.status(500).json({ error: 'Failed to create flashcards' });
+  }
+};
+
 export const updateFlashcard = (req, res) => {
   try {
     const flashcard = Flashcard.update(req.params.id, req.body);

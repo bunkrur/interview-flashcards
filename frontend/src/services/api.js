@@ -26,6 +26,7 @@ export const flashcardsAPI = {
   getById: (id) => api.get(`/flashcards/${id}`),
   getByCategory: (categoryId) => api.get(`/flashcards/category/${categoryId}`),
   create: (data) => api.post('/flashcards', data),
+  createBulk: (data) => api.post('/flashcards/bulk', data),
   update: (id, data) => api.put(`/flashcards/${id}`, data),
   delete: (id) => api.delete(`/flashcards/${id}`),
   exportToSQL: () => {
@@ -62,6 +63,9 @@ export const progressAPI = {
 export const aiAPI = {
   explainAnswer: (data) => api.post('/ai/explain', data),
   askQuestion: (data) => api.post('/ai/ask', data),
+  generateFlashcards: (data) => api.post('/ai/generate-flashcards', data),
+  suggestEmoji: (data) => api.post('/ai/suggest-emoji', data),
+  enhanceFlashcard: (data) => api.post('/ai/enhance-flashcard', data),
 };
 
 export default api;

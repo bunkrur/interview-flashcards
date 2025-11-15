@@ -4,6 +4,7 @@ import {
   getFlashcardById,
   getFlashcardsByCategory,
   createFlashcard,
+  createBulkFlashcards,
   updateFlashcard,
   deleteFlashcard,
   exportToSQL
@@ -16,6 +17,7 @@ router.get('/export', exportToSQL);
 router.get('/:id', getFlashcardById);
 router.get('/category/:categoryId', getFlashcardsByCategory);
 router.post('/', createFlashcard);
+router.post('/bulk', createBulkFlashcards);
 router.put('/:id', updateFlashcard);
 router.delete('/:id', deleteFlashcard);
 
