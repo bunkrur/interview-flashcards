@@ -3,12 +3,15 @@ import { Link } from 'react-router-dom';
 import { flashcardsAPI, categoriesAPI } from '../services/api';
 import LoadingSpinner from '../components/LoadingSpinner';
 import AIGenerationModal from '../components/AIGenerationModal';
+import ViewFlashcardModal from '../components/ViewFlashcardModal';
 
 function Flashcards() {
   const [flashcards, setFlashcards] = useState([]);
   const [categories, setCategories] = useState([]);
   const [loading, setLoading] = useState(true);
   const [showAIModal, setShowAIModal] = useState(false);
+  const [showViewModal, setShowViewModal] = useState(false);
+  const [selectedFlashcard, setSelectedFlashcard] = useState(null);
   const [filters, setFilters] = useState({
     category_id: '',
     difficulty: '',
@@ -51,6 +54,11 @@ function Flashcards() {
 
   const handleFilterChange = (key, value) => {
     setFilters({ ...filters, [key]: value });
+  };
+
+  const handleView = (card) => {
+    setSelectedFlashcard(card);
+    setShowViewModal(true);
   };
 
   const handleDelete = async (id) => {
@@ -186,6 +194,12 @@ function Flashcards() {
                   )}
                 </div>
                 <div className="flex gap-2">
+                  <button
+                    onClick={() => handleView(card)}
+                    className="btn btn-secondary text-sm"
+                  >
+                    View
+                  </button>
                   <Link
                     to={`/flashcards/${card.id}/edit`}
                     className="btn btn-secondary text-sm"
@@ -210,6 +224,12 @@ function Flashcards() {
         onClose={() => setShowAIModal(false)}
         onSuccess={loadFlashcards}
         categories={categories}
+      />
+
+      <ViewFlashcardModal
+        isOpen={showViewModal}
+        onClose={() => setShowViewModal(false)}
+        flashcard={selectedFlashcard}
       />
     </div>
   );
