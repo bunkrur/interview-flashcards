@@ -1,6 +1,9 @@
 import { useEffect, useCallback } from 'react';
 import { Prism as SyntaxHighlighter } from 'react-syntax-highlighter';
 import { vscDarkPlus } from 'react-syntax-highlighter/dist/esm/styles/prism';
+import ReactMarkdown from 'react-markdown';
+import remarkBreaks from 'remark-breaks';
+import remarkGfm from 'remark-gfm';
 
 function FlashCard({ card, onFlip, isFlipped = false }) {
   const handleFlip = useCallback(() => {
@@ -26,13 +29,71 @@ function FlashCard({ card, onFlip, isFlipped = false }) {
     return () => window.removeEventListener('keydown', handleKeyPress);
   }, [handleFlip]);
 
+  const detectLanguage = (code) => {
+    if (!code) return 'javascript';
+
+    const codeStr = code.toLowerCase();
+
+    // Python
+    if (codeStr.includes('def ') || codeStr.includes('import ') || codeStr.includes('print(') ||
+        codeStr.includes('self.') || /^\s*#/.test(code)) {
+      return 'python';
+    }
+
+    // SQL
+    if (codeStr.includes('select ') || codeStr.includes('insert into') ||
+        codeStr.includes('create table') || codeStr.includes('update ') ||
+        codeStr.includes('delete from')) {
+      return 'sql';
+    }
+
+    // Bash/Shell
+    if (codeStr.includes('#!/bin/') || codeStr.includes('echo ') ||
+        /^\s*\$\s/.test(code) || codeStr.includes('export ')) {
+      return 'bash';
+    }
+
+    // Go
+    if (codeStr.includes('func ') || codeStr.includes('package ') ||
+        codeStr.includes('import (') || codeStr.includes(':=')) {
+      return 'go';
+    }
+
+    // TypeScript
+    if (codeStr.includes('interface ') || codeStr.includes(': string') ||
+        codeStr.includes(': number') || codeStr.includes('type ')) {
+      return 'typescript';
+    }
+
+    // Java
+    if (codeStr.includes('public class') || codeStr.includes('public static void') ||
+        codeStr.includes('private ') || codeStr.includes('System.out.')) {
+      return 'java';
+    }
+
+    // CSS
+    if (/{[\s\S]*?}/.test(code) && (codeStr.includes('color:') ||
+        codeStr.includes('margin:') || codeStr.includes('padding:'))) {
+      return 'css';
+    }
+
+    // HTML
+    if (codeStr.includes('<!doctype') || codeStr.includes('<html') ||
+        /<[a-z]+[\s>]/.test(codeStr)) {
+      return 'html';
+    }
+
+    // Default to JavaScript
+    return 'javascript';
+  };
+
   const renderCodeSnippet = (code) => {
     if (!code) return null;
 
     return (
       <div className="mt-4">
         <SyntaxHighlighter
-          language="javascript"
+          language={detectLanguage(code)}
           style={vscDarkPlus}
           className="rounded-lg text-sm"
         >
@@ -122,19 +183,19 @@ function FlashCard({ card, onFlip, isFlipped = false }) {
 
           <div className="space-y-4">
             <div className="bg-white rounded-lg p-4">
-              <p className="text-lg text-gray-900 whitespace-pre-wrap">
-                {card.answer}
-              </p>
+              <div className="text-lg text-gray-900 prose prose-sm max-w-none prose-strong:text-gray-900 prose-strong:font-semibold">
+                <ReactMarkdown remarkPlugins={[remarkBreaks, remarkGfm]}>{card.answer}</ReactMarkdown>
+              </div>
             </div>
 
             {card.code_snippet && renderCodeSnippet(card.code_snippet)}
 
             {card.explanation && (
               <div className="bg-blue-50 border-l-4 border-blue-400 p-4 rounded">
-                <p className="text-sm text-blue-900">
-                  <span className="font-semibold">Explanation: </span>
-                  {card.explanation}
-                </p>
+                <p className="font-semibold text-sm text-blue-900 mb-2">Explanation:</p>
+                <div className="text-sm text-blue-900 prose prose-sm max-w-none prose-strong:text-blue-900 prose-strong:font-semibold prose-p:mt-0">
+                  <ReactMarkdown remarkPlugins={[remarkBreaks, remarkGfm]}>{card.explanation}</ReactMarkdown>
+                </div>
               </div>
             )}
           </div>

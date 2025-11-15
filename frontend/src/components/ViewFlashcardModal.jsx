@@ -1,8 +1,69 @@
 import { Prism as SyntaxHighlighter } from 'react-syntax-highlighter';
 import { vscDarkPlus } from 'react-syntax-highlighter/dist/esm/styles/prism';
+import ReactMarkdown from 'react-markdown';
+import remarkBreaks from 'remark-breaks';
+import remarkGfm from 'remark-gfm';
 
 function ViewFlashcardModal({ isOpen, onClose, flashcard }) {
   if (!isOpen || !flashcard) return null;
+
+  const detectLanguage = (code) => {
+    if (!code) return 'javascript';
+
+    const codeStr = code.toLowerCase();
+
+    // Python
+    if (codeStr.includes('def ') || codeStr.includes('import ') || codeStr.includes('print(') ||
+        codeStr.includes('self.') || /^\s*#/.test(code)) {
+      return 'python';
+    }
+
+    // SQL
+    if (codeStr.includes('select ') || codeStr.includes('insert into') ||
+        codeStr.includes('create table') || codeStr.includes('update ') ||
+        codeStr.includes('delete from')) {
+      return 'sql';
+    }
+
+    // Bash/Shell
+    if (codeStr.includes('#!/bin/') || codeStr.includes('echo ') ||
+        /^\s*\$\s/.test(code) || codeStr.includes('export ')) {
+      return 'bash';
+    }
+
+    // Go
+    if (codeStr.includes('func ') || codeStr.includes('package ') ||
+        codeStr.includes('import (') || codeStr.includes(':=')) {
+      return 'go';
+    }
+
+    // TypeScript
+    if (codeStr.includes('interface ') || codeStr.includes(': string') ||
+        codeStr.includes(': number') || codeStr.includes('type ')) {
+      return 'typescript';
+    }
+
+    // Java
+    if (codeStr.includes('public class') || codeStr.includes('public static void') ||
+        codeStr.includes('private ') || codeStr.includes('System.out.')) {
+      return 'java';
+    }
+
+    // CSS
+    if (/{[\s\S]*?}/.test(code) && (codeStr.includes('color:') ||
+        codeStr.includes('margin:') || codeStr.includes('padding:'))) {
+      return 'css';
+    }
+
+    // HTML
+    if (codeStr.includes('<!doctype') || codeStr.includes('<html') ||
+        /<[a-z]+[\s>]/.test(codeStr)) {
+      return 'html';
+    }
+
+    // Default to JavaScript
+    return 'javascript';
+  };
 
   const getDifficultyColor = (difficulty) => {
     switch (difficulty) {
@@ -67,7 +128,9 @@ function ViewFlashcardModal({ isOpen, onClose, flashcard }) {
           <div>
             <h3 className="text-sm font-medium text-gray-500 mb-2">Answer</h3>
             <div className="p-4 bg-primary-50 border border-primary-200 rounded-lg">
-              <p className="text-gray-900 whitespace-pre-wrap">{flashcard.answer}</p>
+              <div className="text-gray-900 prose prose-sm max-w-none prose-strong:text-gray-900 prose-strong:font-semibold">
+                <ReactMarkdown remarkPlugins={[remarkBreaks, remarkGfm]}>{flashcard.answer}</ReactMarkdown>
+              </div>
             </div>
           </div>
 
@@ -76,7 +139,7 @@ function ViewFlashcardModal({ isOpen, onClose, flashcard }) {
             <div>
               <h3 className="text-sm font-medium text-gray-500 mb-2">Code Snippet</h3>
               <SyntaxHighlighter
-                language="javascript"
+                language={detectLanguage(flashcard.code_snippet)}
                 style={vscDarkPlus}
                 className="rounded-lg text-sm"
               >
@@ -90,7 +153,9 @@ function ViewFlashcardModal({ isOpen, onClose, flashcard }) {
             <div>
               <h3 className="text-sm font-medium text-gray-500 mb-2">Explanation</h3>
               <div className="p-4 bg-blue-50 border border-blue-200 rounded-lg">
-                <p className="text-gray-900 whitespace-pre-wrap">{flashcard.explanation}</p>
+                <div className="text-gray-900 prose prose-sm max-w-none prose-strong:text-gray-900 prose-strong:font-semibold">
+                  <ReactMarkdown remarkPlugins={[remarkBreaks, remarkGfm]}>{flashcard.explanation}</ReactMarkdown>
+                </div>
               </div>
             </div>
           )}

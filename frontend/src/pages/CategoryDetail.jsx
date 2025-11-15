@@ -3,6 +3,7 @@ import { useParams, Link } from 'react-router-dom';
 import { categoriesAPI, flashcardsAPI, studyAPI } from '../services/api';
 import LoadingSpinner from '../components/LoadingSpinner';
 import StatsCard from '../components/StatsCard';
+import ViewFlashcardModal from '../components/ViewFlashcardModal';
 
 function CategoryDetail() {
   const { slug } = useParams();
@@ -10,6 +11,8 @@ function CategoryDetail() {
   const [cards, setCards] = useState([]);
   const [dueCards, setDueCards] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [showViewModal, setShowViewModal] = useState(false);
+  const [selectedFlashcard, setSelectedFlashcard] = useState(null);
 
   useEffect(() => {
     loadCategoryData();
@@ -32,6 +35,30 @@ function CategoryDetail() {
       console.error('Error loading category data:', error);
     } finally {
       setLoading(false);
+    }
+  };
+
+  const handleView = (card) => {
+    // Add category info to the card for the modal
+    const cardWithCategory = {
+      ...card,
+      category_name: category.name,
+      category_color: category.color,
+    };
+    setSelectedFlashcard(cardWithCategory);
+    setShowViewModal(true);
+  };
+
+  const handleDelete = async (cardId) => {
+    if (!confirm('Are you sure you want to delete this flashcard?')) return;
+
+    try {
+      await flashcardsAPI.delete(cardId);
+      // Reload the category data to refresh the list
+      loadCategoryData();
+    } catch (error) {
+      console.error('Error deleting flashcard:', error);
+      alert('Failed to delete flashcard. Please try again.');
     }
   };
 
@@ -126,7 +153,7 @@ function CategoryDetail() {
                 key={card.id}
                 className="p-4 border border-gray-200 rounded-lg hover:border-primary-300 hover:bg-gray-50 transition-colors"
               >
-                <div className="flex items-start justify-between">
+                <div className="flex items-start justify-between gap-4">
                   <div className="flex-1">
                     <p className="font-medium text-gray-900 mb-1">
                       {card.question}
@@ -148,18 +175,38 @@ function CategoryDetail() {
                       )}
                     </div>
                   </div>
-                  <Link
-                    to={`/flashcards/${card.id}/edit`}
-                    className="text-primary-600 hover:text-primary-700 text-sm font-medium"
-                  >
-                    Edit
-                  </Link>
+                  <div className="flex gap-2">
+                    <button
+                      onClick={() => handleView(card)}
+                      className="btn btn-secondary text-sm"
+                    >
+                      View
+                    </button>
+                    <Link
+                      to={`/flashcards/${card.id}/edit`}
+                      className="btn btn-secondary text-sm"
+                    >
+                      Edit
+                    </Link>
+                    <button
+                      onClick={() => handleDelete(card.id)}
+                      className="btn btn-danger text-sm"
+                    >
+                      Delete
+                    </button>
+                  </div>
                 </div>
               </div>
             ))}
           </div>
         )}
       </div>
+
+      <ViewFlashcardModal
+        isOpen={showViewModal}
+        onClose={() => setShowViewModal(false)}
+        flashcard={selectedFlashcard}
+      />
     </div>
   );
 }

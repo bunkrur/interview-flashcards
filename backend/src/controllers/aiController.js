@@ -239,7 +239,15 @@ Guidelines:
 - Include code snippets for technical topics
 - Make difficulty appropriate to the content complexity
 - Focus on making the flashcard more valuable for interview preparation
-- Return ONLY the JSON object, no markdown formatting`;
+- **USE MARKDOWN FORMATTING** extensively in both answer and explanation:
+  - Use **bold** for key terms, commands, and important concepts
+  - Use *italic* for emphasis
+  - Use bullet lists with "-" for lists of items
+  - Use numbered lists for sequential steps or ordered information
+  - Use inline \`code\` for commands, variables, and short code references
+  - Organize content with clear structure using markdown formatting
+  - Make the content visually scannable and easy to read
+- Return ONLY the JSON object, no markdown code blocks around the JSON itself`;
 
     const message = await anthropic.messages.create({
       model: 'claude-sonnet-4-5-20250929',
@@ -354,7 +362,15 @@ Guidelines:
 - Include code snippets for programming concepts
 - Make questions interview-focused
 - Ensure answers are concise but complete
-- Return ONLY the JSON array, no markdown formatting or additional text`;
+- **USE MARKDOWN FORMATTING** extensively in both answer and explanation fields:
+  - Use **bold** for key terms, commands, and important concepts
+  - Use *italic* for emphasis
+  - Use bullet lists with "-" for lists of items
+  - Use numbered lists for sequential steps or ordered information
+  - Use inline \`code\` for commands, variables, and short code references
+  - Organize content with clear structure using markdown formatting
+  - Make the content visually scannable and easy to read
+- Return ONLY the JSON array, no markdown code blocks around the JSON itself`;
 
     const message = await anthropic.messages.create({
       model: 'claude-sonnet-4-5-20250929',

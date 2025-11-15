@@ -2,6 +2,11 @@ import { useEffect, useState } from 'react';
 import { useParams, useNavigate, useSearchParams } from 'react-router-dom';
 import { flashcardsAPI, categoriesAPI, aiAPI } from '../services/api';
 import LoadingSpinner from '../components/LoadingSpinner';
+import ReactMarkdown from 'react-markdown';
+import remarkBreaks from 'remark-breaks';
+import remarkGfm from 'remark-gfm';
+import { Prism as SyntaxHighlighter } from 'react-syntax-highlighter';
+import { vscDarkPlus } from 'react-syntax-highlighter/dist/esm/styles/prism';
 
 function FlashcardForm() {
   const { id } = useParams();
@@ -55,6 +60,64 @@ function FlashcardForm() {
   const handleChange = (e) => {
     const { name, value } = e.target;
     setFormData({ ...formData, [name]: value });
+  };
+
+  const detectLanguage = (code) => {
+    if (!code) return 'javascript';
+
+    const codeStr = code.toLowerCase();
+
+    // Python
+    if (codeStr.includes('def ') || codeStr.includes('import ') || codeStr.includes('print(') ||
+        codeStr.includes('self.') || /^\s*#/.test(code)) {
+      return 'python';
+    }
+
+    // SQL
+    if (codeStr.includes('select ') || codeStr.includes('insert into') ||
+        codeStr.includes('create table') || codeStr.includes('update ') ||
+        codeStr.includes('delete from')) {
+      return 'sql';
+    }
+
+    // Bash/Shell
+    if (codeStr.includes('#!/bin/') || codeStr.includes('echo ') ||
+        /^\s*\$\s/.test(code) || codeStr.includes('export ')) {
+      return 'bash';
+    }
+
+    // Go
+    if (codeStr.includes('func ') || codeStr.includes('package ') ||
+        codeStr.includes('import (') || codeStr.includes(':=')) {
+      return 'go';
+    }
+
+    // TypeScript
+    if (codeStr.includes('interface ') || codeStr.includes(': string') ||
+        codeStr.includes(': number') || codeStr.includes('type ')) {
+      return 'typescript';
+    }
+
+    // Java
+    if (codeStr.includes('public class') || codeStr.includes('public static void') ||
+        codeStr.includes('private ') || codeStr.includes('System.out.')) {
+      return 'java';
+    }
+
+    // CSS
+    if (/{[\s\S]*?}/.test(code) && (codeStr.includes('color:') ||
+        codeStr.includes('margin:') || codeStr.includes('padding:'))) {
+      return 'css';
+    }
+
+    // HTML
+    if (codeStr.includes('<!doctype') || codeStr.includes('<html') ||
+        /<[a-z]+[\s>]/.test(codeStr)) {
+      return 'html';
+    }
+
+    // Default to JavaScript
+    return 'javascript';
   };
 
   const handleEnhance = async () => {
@@ -326,13 +389,17 @@ function FlashcardForm() {
                   <div>
                     <div className="text-sm font-medium text-gray-500 mb-2">Current</div>
                     <div className="p-4 bg-gray-50 border border-gray-200 rounded-lg min-h-[100px]">
-                      <p className="text-gray-700 whitespace-pre-wrap">{formData.answer}</p>
+                      <div className="text-gray-700 prose prose-sm max-w-none prose-strong:text-gray-700 prose-strong:font-semibold">
+                        <ReactMarkdown remarkPlugins={[remarkBreaks, remarkGfm]}>{formData.answer}</ReactMarkdown>
+                      </div>
                     </div>
                   </div>
                   <div>
                     <div className="text-sm font-medium text-green-600 mb-2">✨ Enhanced</div>
                     <div className="p-4 bg-green-50 border border-green-200 rounded-lg min-h-[100px]">
-                      <p className="text-gray-700 whitespace-pre-wrap">{enhancement.answer}</p>
+                      <div className="text-gray-700 prose prose-sm max-w-none prose-strong:text-gray-700 prose-strong:font-semibold">
+                        <ReactMarkdown remarkPlugins={[remarkBreaks, remarkGfm]}>{enhancement.answer}</ReactMarkdown>
+                      </div>
                     </div>
                   </div>
                 </div>
@@ -346,13 +413,17 @@ function FlashcardForm() {
                     <div>
                       <div className="text-sm font-medium text-gray-500 mb-2">Current</div>
                       <div className="p-4 bg-gray-50 border border-gray-200 rounded-lg min-h-[100px]">
-                        <p className="text-gray-700 whitespace-pre-wrap">{formData.explanation || 'None'}</p>
+                        <div className="text-gray-700 prose prose-sm max-w-none prose-strong:text-gray-700 prose-strong:font-semibold">
+                          <ReactMarkdown remarkPlugins={[remarkBreaks, remarkGfm]}>{formData.explanation || 'None'}</ReactMarkdown>
+                        </div>
                       </div>
                     </div>
                     <div>
                       <div className="text-sm font-medium text-green-600 mb-2">✨ Enhanced</div>
                       <div className="p-4 bg-green-50 border border-green-200 rounded-lg min-h-[100px]">
-                        <p className="text-gray-700 whitespace-pre-wrap">{enhancement.explanation || 'None'}</p>
+                        <div className="text-gray-700 prose prose-sm max-w-none prose-strong:text-gray-700 prose-strong:font-semibold">
+                          <ReactMarkdown remarkPlugins={[remarkBreaks, remarkGfm]}>{enhancement.explanation || 'None'}</ReactMarkdown>
+                        </div>
                       </div>
                     </div>
                   </div>
@@ -366,15 +437,35 @@ function FlashcardForm() {
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                     <div>
                       <div className="text-sm font-medium text-gray-500 mb-2">Current</div>
-                      <pre className="p-4 bg-gray-800 text-white rounded-lg overflow-x-auto text-sm min-h-[100px]">
-                        <code>{formData.code_snippet || 'None'}</code>
-                      </pre>
+                      {formData.code_snippet ? (
+                        <SyntaxHighlighter
+                          language={detectLanguage(formData.code_snippet)}
+                          style={vscDarkPlus}
+                          className="rounded-lg text-sm"
+                        >
+                          {formData.code_snippet}
+                        </SyntaxHighlighter>
+                      ) : (
+                        <div className="p-4 bg-gray-50 border border-gray-200 rounded-lg min-h-[100px] text-gray-500">
+                          None
+                        </div>
+                      )}
                     </div>
                     <div>
                       <div className="text-sm font-medium text-green-600 mb-2">✨ Enhanced</div>
-                      <pre className="p-4 bg-gray-800 text-white rounded-lg overflow-x-auto text-sm min-h-[100px]">
-                        <code>{enhancement.code_snippet || 'None'}</code>
-                      </pre>
+                      {enhancement.code_snippet ? (
+                        <SyntaxHighlighter
+                          language={detectLanguage(enhancement.code_snippet)}
+                          style={vscDarkPlus}
+                          className="rounded-lg text-sm"
+                        >
+                          {enhancement.code_snippet}
+                        </SyntaxHighlighter>
+                      ) : (
+                        <div className="p-4 bg-gray-50 border border-gray-200 rounded-lg min-h-[100px] text-gray-500">
+                          None
+                        </div>
+                      )}
                     </div>
                   </div>
                 </div>
