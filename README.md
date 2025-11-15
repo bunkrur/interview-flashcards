@@ -6,7 +6,7 @@ A full-stack flashcard application for coding and tech knowledge with spaced rep
 
 - **Spaced Repetition Learning**: SM-2 algorithm for optimal review scheduling
 - **AI-Powered Explanations**: Get additional context and deeper explanations using Claude Sonnet 4.5
-- **250+ Flashcards**: 25 cards per category covering beginner to advanced topics
+- **250+ Flashcards**: 25+ cards per category covering beginner to advanced topics
 - **10+ Categories**: Linux, Git, Kubernetes, ArgoCD, Docker, Computer Science, SRE, Networking, SQL, System Design
 - **Progress Tracking**: Track your learning progress, streaks, and mastery levels
 - **Progress Reset**: Clear your learning progress while keeping all flashcards
@@ -262,4 +262,5 @@ The Progress page includes a "Reset Progress" button that allows you to start fr
 ## License
 
 MIT
+
 
